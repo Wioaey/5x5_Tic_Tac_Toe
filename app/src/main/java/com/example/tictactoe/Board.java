@@ -49,6 +49,7 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
                 Intent intent = new Intent();
                 setResult(RESULT_OK, intent);
                 finish();
+
             }
         });
     }
@@ -62,6 +63,7 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
             ((Button) v).setText("X");
             setRedColor(v);
             player1turn = false;
+
             return;
         } else {
             ((Button) v).setText("O");
