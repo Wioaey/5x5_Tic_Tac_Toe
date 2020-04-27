@@ -57,14 +57,14 @@
         android:layout_height="85dp"
         android:layout_marginTop="250dp">
 
-        <Button
+        <ImageButton
             android:id="@+id/red1"
             android:layout_width="10dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:backgroundTint="@color/red1"
             android:text="X"
-            android:textSize="50sp"></Button>
+            android:textSize="50sp"></ImageButton>
 
         <Button
             android:id="@+id/red2"

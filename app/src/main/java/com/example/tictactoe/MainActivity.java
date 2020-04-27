@@ -5,7 +5,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView title;
@@ -54,8 +57,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button blueFive = findViewById(R.id.blue5);
         blueFive.setOnClickListener(this);
 
-        Button redOne = findViewById(R.id.red1);
+        ImageButton redOne = findViewById(R.id.red1);
         redOne.setOnClickListener(this);
+        Picasso.get().load("https://pbs.twimg.com/media/ETet6R8XYAMvx4V.jpg").
+                resize(200, 200).into(redOne);
         Button redTwo = findViewById(R.id.red2);
         redTwo.setOnClickListener(this);
         Button redThree = findViewById(R.id.red3);
@@ -71,7 +76,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             redFour.setText("");
             redThree.setText("");
             redTwo.setText("");
-            redOne.setText("");
         }
         if (i == 1) {
             //reset blues
