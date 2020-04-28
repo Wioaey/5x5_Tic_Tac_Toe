@@ -2,13 +2,24 @@ package com.example.tictactoe;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView title;
@@ -18,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private int colorRed = 1;
     private int colorBlue = 1;
+    private RequestQueue mQueue;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -29,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         playerOne = findViewById(R.id.player1);
         playerTwo = findViewById(R.id.player2);
 
+        mQueue = Volley.newRequestQueue(this);
         settingColors(3);
 
         Button startGame = findViewById(R.id.startGame);
@@ -46,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void settingColors(int i) {
+
         Button blueOne = findViewById(R.id.blue1);
         blueOne.setOnClickListener(this);
         Button blueTwo = findViewById(R.id.blue2);
@@ -59,8 +73,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ImageButton redOne = findViewById(R.id.red1);
         redOne.setOnClickListener(this);
-        Picasso.get().load("https://pbs.twimg.com/media/ETet6R8XYAMvx4V.jpg").
-                resize(200, 200).into(redOne);
+        getRandomURL("https://random.dog/woof.json", redOne);
+
         Button redTwo = findViewById(R.id.red2);
         redTwo.setOnClickListener(this);
         Button redThree = findViewById(R.id.red3);
@@ -120,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ((Button) v).setText("X");
                 break;
 
-                //now blues
+            //now blues
 
             case R.id.blue1:
                 settingColors(1);
@@ -153,5 +167,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+
+    private void getRandomURL(String input, final ImageButton toChangeImage) {
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, input, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            String imageUrl = response.get("url").toString();
+                            Picasso.get().load(imageUrl).
+                                    resize(200, 200).into(toChangeImage);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+            }
+        });
+
+        mQueue.add(request);
+
+    }
 }
+
+
 
