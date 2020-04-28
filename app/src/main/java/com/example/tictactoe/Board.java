@@ -6,11 +6,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 public class Board extends AppCompatActivity implements View.OnClickListener {
 
-    private Button[][] buttons = new Button[5][5];
+    private ImageButton[][] buttons = new ImageButton[5][5];
     private boolean player1turn = true;
     private int roundCount;
     private int player1points;
@@ -19,9 +22,9 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
     private TextView txtViewP1;
     private TextView txtViewP2;
 
-    private int[] colorsArray;
-    private int redColor = 0;
-    private int blueColor = 0;
+    private String[] urls;
+    private String dogUrl;
+    private String catUrl;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -39,8 +42,8 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
             }
         }
 
-        colorsArray = getIntent().getIntArrayExtra("colors");
-        unpackColors();
+        urls = getIntent().getStringArrayExtra("URLs");
+        unpackUrls();
 
         Button buttonReset = findViewById(R.id.button_reset);
         buttonReset.setOnClickListener(new View.OnClickListener() {
@@ -53,21 +56,19 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
             }
         });
     }
+
     @Override
     public void onClick(View v) {
-        if (!((Button) v).getText().toString().equals("")) {
-            return;
-        }
+        ImageButton pressed = (ImageButton) v;
+
         roundCount++;
         if (player1turn) {
-            ((Button) v).setText("X");
-            setRedColor(v);
+            Picasso.get().load(dogUrl).fit().into(pressed);
             player1turn = false;
 
             return;
         } else {
-            ((Button) v).setText("O");
-            setBlueColor(v);
+            Picasso.get().load(catUrl).fit().into(pressed);
             player1turn = true;
             return;
         }
@@ -80,7 +81,7 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                field[i][j]  = buttons[i][j].getText().toString();
+
             }
         }
 
@@ -92,57 +93,8 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
         return true;
     }
 
-    private void unpackColors() {
-        redColor = colorsArray[0];
-        blueColor = colorsArray[1];
-    }
-
-    private void setRedColor(View v) {
-        switch (redColor) {
-            case 1:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red1));
-                break;
-
-            case 2:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red2));
-                break;
-
-            case 3:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red3));
-                break;
-
-            case 4:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red4));
-                break;
-
-            case 5:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red5));
-                break;
-        }
-    }
-
-    private void setBlueColor(View v) {
-        switch (blueColor) {
-            case 1:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue1));
-                break;
-
-            case 2:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue2));
-                break;
-
-            case 3:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue3));
-                break;
-
-            case 4:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue4));
-                break;
-
-            case 5:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue5));
-                break;
-
-        }
+    private void unpackUrls() {
+        dogUrl = urls[0];
+        catUrl = urls[1];
     }
 }

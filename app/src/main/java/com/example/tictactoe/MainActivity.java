@@ -2,7 +2,7 @@ package com.example.tictactoe;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
-import android.media.Image;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -26,10 +26,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView instructions;
     private TextView playerOne;
     private TextView playerTwo;
+    private TextView debug;
 
-    private int colorRed = 1;
-    private int colorBlue = 1;
+    private int imageOf1 = 0;
+    private int imageOf2 = 0;
     private RequestQueue mQueue;
+
+    private ImageButton[][] imageBut = new ImageButton[2][5];
+    private TextView[][] txtSelected = new TextView[2][5];
+
+    private String[][] storeURL = new String[2][5];
+    private String singleURL;
+
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -40,143 +48,172 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         instructions = findViewById(R.id.Instructions);
         playerOne = findViewById(R.id.player1);
         playerTwo = findViewById(R.id.player2);
+        debug = findViewById(R.id.debug);
 
         mQueue = Volley.newRequestQueue(this);
-        settingColors(3);
+        settingImageButton();
+        settingSelected();
+
+        Button getNew = findViewById(R.id.startGame2);
+        getNew.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                settingImageButton();
+                settingSelected();
+            }
+        });
 
         Button startGame = findViewById(R.id.startGame);
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int[] colorsArray = new int[2];
-                colorsArray[0] = colorRed;
-                colorsArray[1] = colorBlue;
+                String[] imageUrls = new String[2];
+                imageUrls[0] = storeURL[0][imageOf1];
+                imageUrls[1] = storeURL[1][imageOf2];
+
                 Intent intent = new Intent(view.getContext(), Board.class);
-                intent.putExtra("colors", colorsArray);
+                intent.putExtra("URLs", imageUrls);
                 startActivity(intent);
             }
         });
     }
 
-    private void settingColors(int i) {
+    private void settingImageButton() {
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 5; j++) {
+                String buttonID = "imageB_" + i + j;
+                int resID = getResources().getIdentifier(buttonID, "id", getPackageName());
+                imageBut[i][j] = findViewById(resID);
+                imageBut[i][j].setOnClickListener(MainActivity.this);
 
-        Button blueOne = findViewById(R.id.blue1);
-        blueOne.setOnClickListener(this);
-        Button blueTwo = findViewById(R.id.blue2);
-        blueTwo.setOnClickListener(this);
-        Button blueThree = findViewById(R.id.blue3);
-        blueThree.setOnClickListener(this);
-        Button blueFour = findViewById(R.id.blue4);
-        blueFour.setOnClickListener(this);
-        Button blueFive = findViewById(R.id.blue5);
-        blueFive.setOnClickListener(this);
-
-        ImageButton redOne = findViewById(R.id.red1);
-        redOne.setOnClickListener(this);
-        getRandomURL("https://random.dog/woof.json", redOne);
-
-        Button redTwo = findViewById(R.id.red2);
-        redTwo.setOnClickListener(this);
-        Button redThree = findViewById(R.id.red3);
-        redThree.setOnClickListener(this);
-        Button redFour = findViewById(R.id.red4);
-        redFour.setOnClickListener(this);
-        Button redFive = findViewById(R.id.red5);
-        redFive.setOnClickListener(this);
-
-        if (i == 0) {
-            //reset reds
-            redFive.setText("");
-            redFour.setText("");
-            redThree.setText("");
-            redTwo.setText("");
+                if (i == 0) {
+                    getRandomURL("https://dog.ceo/api/breeds/image/random", imageBut[i][j],
+                            "dog", i, j);
+                } else if (i == 1) {
+                    getRandomURL("https://aws.random.cat/meow", imageBut[i][j],
+                            "cat", i, j);
+                }
+            }
         }
-        if (i == 1) {
-            //reset blues
-            blueFive.setText("");
-            blueFour.setText("");
-            blueThree.setText("");
-            blueTwo.setText("");
-            blueOne.setText("");
+    }
+
+    private void settingSelected() {
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 5; j++) {
+                String buttonID = "pet_" + i + j;
+                int resID = getResources().getIdentifier(buttonID, "id", getPackageName());
+                txtSelected[i][j] = findViewById(resID);
+            }
+        }
+    }
+
+    private void resetDogs(int j) {
+        for (int qw = 0; qw < 5; qw++) {
+            if (qw == j) {
+                txtSelected[0][j].setText(getString(R.string.selection));
+                continue;
+            }
+            txtSelected[0][qw].setText("");
+        }
+    }
+
+    private void resetCats(int j) {
+        for (int qw = 0; qw < 5; qw++) {
+            if (qw == j) {
+                txtSelected[1][j].setText(getString(R.string.selection));
+                continue;
+            }
+            txtSelected[1][qw].setText("");
         }
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.red1:
-                settingColors(0);
-                colorRed = 1;
-                ((Button) v).setText("X");
+        ImageButton toBeChanged = (ImageButton) v;
+        switch (toBeChanged.getId()) {
+            case R.id.imageB_00:
+                imageOf1 = 0;
+                resetDogs(0);
+                debug.setText(storeURL[0][0]);
                 break;
 
-            case R.id.red2:
-                settingColors(0);
-                colorRed = 2;
-                ((Button) v).setText("X");
+            case R.id.imageB_01:
+                imageOf1 = 1;
+                resetDogs(1);
+                debug.setText(storeURL[0][1]);
                 break;
 
-            case R.id.red3:
-                settingColors(0);
-                colorRed = 3;
-                ((Button) v).setText("X");
+            case R.id.imageB_02:
+                imageOf1 = 2;
+                resetDogs(2);
+                debug.setText(storeURL[0][2]);
                 break;
 
-            case R.id.red4:
-                settingColors(0);
-                colorRed = 4;
-                ((Button) v).setText("X");
+            case R.id.imageB_03:
+                imageOf1 = 3;
+                resetDogs(3);
+                debug.setText(storeURL[0][3]);
                 break;
 
-            case R.id.red5:
-                settingColors(0);
-                colorRed = 5;
-                ((Button) v).setText("X");
+            case R.id.imageB_04:
+                imageOf1 = 4;
+                resetDogs(4);
+                debug.setText(storeURL[0][4]);
                 break;
 
             //now blues
 
-            case R.id.blue1:
-                settingColors(1);
-                colorBlue = 1;
-                ((Button) v).setText("X");
+            case R.id.imageB_10:
+                imageOf2 = 0;
+                resetCats(0);
+                debug.setText(storeURL[1][0]);
                 break;
 
-            case R.id.blue2:
-                settingColors(1);
-                colorBlue = 2;
-                ((Button) v).setText("X");
+            case R.id.imageB_11:
+                imageOf2 = 1;
+                resetCats(1);
+                debug.setText(storeURL[1][1]);
                 break;
 
-            case R.id.blue3:
-                settingColors(1);
-                colorBlue = 3;
-                ((Button) v).setText("X");
+            case R.id.imageB_12:
+                imageOf2 = 2;
+                resetCats(2);
+                debug.setText(storeURL[1][2]);
                 break;
 
-            case R.id.blue4:
-                settingColors(1);
-                colorBlue = 4;
-                ((Button) v).setText("X");
+            case R.id.imageB_13:
+                imageOf2 = 3;
+                resetCats(3);
+                debug.setText(storeURL[1][3]);
                 break;
 
-            case R.id.blue5:
-                settingColors(1);
-                colorBlue = 5;
-                ((Button) v).setText("X");
+            case R.id.imageB_14:
+                imageOf2 = 4;
+                resetCats(4);
+                debug.setText(storeURL[1][4]);
                 break;
         }
     }
 
-    private void getRandomURL(String input, final ImageButton toChangeImage) {
+    private void getRandomURL(String input, final ImageButton toChangeImage, final String pet,
+                              final int i, final int j) {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, input, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
-                            String imageUrl = response.get("url").toString();
-                            Picasso.get().load(imageUrl).
-                                    resize(200, 200).into(toChangeImage);
+                            if (pet.equals("dog")) {
+                                String imageUrl = response.get("message").toString();
+                                storeURL[i][j] = imageUrl;
+                                Picasso.get().load(imageUrl).resize(200,200).
+                                        into(toChangeImage);
+                            } else {
+                                String catURL = response.getString("file");
+                                storeURL[i][j] = catURL;
+                                Picasso.get().load(catURL).resize(200,200).
+                                        into(toChangeImage);
+                            }
+                            // 200 by 200 is the one
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -187,9 +224,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 error.printStackTrace();
             }
         });
-
         mQueue.add(request);
-
     }
 }
 
