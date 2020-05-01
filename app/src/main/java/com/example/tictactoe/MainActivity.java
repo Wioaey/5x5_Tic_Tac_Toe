@@ -22,32 +22,63 @@ import org.json.JSONObject;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private TextView title;
-    private TextView instructions;
-    private TextView playerOne;
-    private TextView playerTwo;
+    /**
+     * Will show the URL of the cat or dog image that was last selected.
+     * Useful for debugging other stuff in the MainActivity.
+     */
     private TextView debug;
 
+    /**
+     *  Stores the URLS of the dogs and cats.
+     *  The first level are the dog URLS in the order shown in screen.
+     *  The second level are the cat URLS.
+     */
+    private String[][] storeURL = new String[2][5];
+
+    /**
+     *  Index of the selected dog image in the storeURL array.
+     */
     private int imageOf1 = 0;
+
+    /**
+     *  Index of the selected cat image in the storeURL array.
+     */
     private int imageOf2 = 0;
+
+    /**
+     *  For the Dog and Cat APIs.
+     */
     private RequestQueue mQueue;
 
+    /**
+     *  Array of the ImageButtons of the cats and dogs.
+     *  Just as before, the first level is for dogs and the second level is for cats.
+     */
     private ImageButton[][] imageBut = new ImageButton[2][5];
+
+    /**
+     *  Only purpose is to let know the user what image has been selected.
+     *  Starts with the elements of index [0][0] and [1][0] displaying "selected",
+     *  because the corresponding images are the default images.
+     */
     private TextView[][] txtSelected = new TextView[2][5];
 
-    private String[][] storeURL = new String[2][5];
-    private String singleURL;
 
 
+    /**
+     *  Loads the title, instructions, dog images and its buttons, cat images and its buttons.
+     *  To load the images it sets up the queue for the APIs before.
+     *
+     *  Sets up the startGame button that will take the player to the board and will pass the
+     *  selected urls (cat and dog) as a string array of length 2 to the next screen.
+     *
+     * @param savedInstanceState default?
+     */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        title = findViewById(R.id.Title);
-        instructions = findViewById(R.id.Instructions);
-        playerOne = findViewById(R.id.player1);
-        playerTwo = findViewById(R.id.player2);
         debug = findViewById(R.id.debug);
 
         mQueue = Volley.newRequestQueue(this);
@@ -78,6 +109,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
+    /**
+     *  Sets the imageButtons, first by storing them in the imageBut array and then by loading the
+     *  images of dogs and cats to them.
+     */
     private void settingImageButton() {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 5; j++) {
@@ -87,16 +122,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 imageBut[i][j].setOnClickListener(MainActivity.this);
 
                 if (i == 0) {
-                    getRandomURL("https://dog.ceo/api/breeds/image/random", imageBut[i][j],
+                    setImageFromURL("https://dog.ceo/api/breeds/image/random", imageBut[i][j],
                             "dog", i, j);
                 } else if (i == 1) {
-                    getRandomURL("https://aws.random.cat/meow", imageBut[i][j],
+                    setImageFromURL("https://aws.random.cat/meow", imageBut[i][j],
                             "cat", i, j);
                 }
             }
         }
     }
 
+    /**
+     *  Sets up the Text for indicating what image was selected.
+     */
     private void settingSelected() {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 5; j++) {
@@ -107,6 +145,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     *  Changes the selected text to the corresponding selected image of the Dog.
+     * @param j is the position of the selected image.
+     */
     private void resetDogs(int j) {
         for (int qw = 0; qw < 5; qw++) {
             if (qw == j) {
@@ -117,6 +159,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     *  Changes the selected text to the corresponding selected image of the Cat.
+     * @param j is the position of the selected image.
+     */
     private void resetCats(int j) {
         for (int qw = 0; qw < 5; qw++) {
             if (qw == j) {
@@ -127,6 +173,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    /**
+     *  Detects which button has been pressed and saves the position to the imageOf1 or 2
+     *  variable, so that it can be then used by the intent to get only the selected urls.
+     *
+     *  Uses the resetDogs method to refresh the selection in the user's screen.
+     * @param v is the button that has been clicked.
+     */
     @Override
     public void onClick(View v) {
         ImageButton toBeChanged = (ImageButton) v;
@@ -195,7 +248,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void getRandomURL(String input, final ImageButton toChangeImage, final String pet,
+    /**
+     *  Sets up the request of the URL of the image from the API.
+     *  It manages the parsing, storage, and display of images.
+     *
+     *  Uses the resetDogs method to refresh the selection in the user's screen.
+     * @param input is our API for cats and dogs.
+     * @param toChangeImage is the ImageButton which image will be changed or set up.
+     * @param pet is either Cat or Dog, depends on the button that you are trying to set up.
+     * @i coordinate of the button you are setting up. Useful for storing the urls.
+     * @j coordinate of the button you are setting up. Useful for storing the urls.
+     */
+    private void setImageFromURL(String input, final ImageButton toChangeImage, final String pet,
                               final int i, final int j) {
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, input, null,
                 new Response.Listener<JSONObject>() {
