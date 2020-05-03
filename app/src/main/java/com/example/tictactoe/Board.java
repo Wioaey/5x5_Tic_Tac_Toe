@@ -6,23 +6,54 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 public class Board extends AppCompatActivity implements View.OnClickListener {
 
-    private Button[][] buttons = new Button[5][5];
-    private boolean player1turn = true;
+    /**
+     *  Array of the buttons by cell position/coordinates.
+     */
+    private ImageButton[][] buttons = new ImageButton[6][4];
+
+    /**
+     *  Keeps track of which round is. When it's even it's the turn of the Dog, otherwise is cat.
+     */
     private int roundCount;
-    private int player1points;
-    private int player2points;
+
+    /**
+     *  Keeps track of the captured cells. Only stores "dog" when a dog has captured it,
+     *  "cat" when a cat has captured it, and "" when it's not captured.
+     */
+    private String[][] petCell = new String[6][4];
 
     private TextView txtViewP1;
     private TextView txtViewP2;
 
-    private int[] colorsArray;
-    private int redColor = 0;
-    private int blueColor = 0;
+    /**
+     *  Stores the urls of the selected dog and cat from the intent.
+     */
+    private String[] urls;
 
+    /**
+     *  Stores Dog URL.
+     */
+    private String dogUrl;
+
+    /**
+     *  Stores the Cat URL.
+     */
+    private String catUrl;
+
+    /**
+     *  Initializes the game by setting up the count as zero, populating the petCell array to ""
+     *  setting the listener on the buttons, getting the intent, and setting up the button for going
+     *  back to the selection screen.
+     *
+     * @param savedInstanceState default?
+     */
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,8 +61,12 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
         txtViewP1 = findViewById(R.id.text_view_p1);
         txtViewP2 = findViewById(R.id.text_view_p2);
 
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
+        roundCount = 0;
+
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 4; j++) {
+                petCell[i][j] = "";
+
                 String buttonID = "button_" + i + j;
                 int resID = getResources().getIdentifier(buttonID, "id", getPackageName());
                 buttons[i][j] = findViewById(resID);
@@ -39,8 +74,8 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
             }
         }
 
-        colorsArray = getIntent().getIntArrayExtra("colors");
-        unpackColors();
+        urls = getIntent().getStringArrayExtra("URLs");
+        unpackUrls();
 
         Button buttonReset = findViewById(R.id.button_reset);
         buttonReset.setOnClickListener(new View.OnClickListener() {
@@ -53,26 +88,35 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
             }
         });
     }
+
+    /**
+     * Checks if it's valid if not then it just returns without increasing the count.
+     *
+     * If it's valid, then it checks which turn is it and captures the cell in the petCell array
+     * of the pet and loads the image onto the button. Finally, it increases the count.
+     *
+     * @param v button that has been clicked.
+     */
     @Override
     public void onClick(View v) {
-        if (!((Button) v).getText().toString().equals("")) {
+        ImageButton pressed = (ImageButton) v;
+        int[] capturedCell = getButtonID(v.getId());
+        boolean canTake = valid(capturedCell);
+
+        if (!canTake) {
             return;
         }
+
+        if (roundCount % 2 == 0) {
+            (petCell[capturedCell[0]][capturedCell[1]]) = "dog";
+            Picasso.get().load(dogUrl).resize(247,229).into(pressed);
+
+        } else if (roundCount % 2 == 1) {
+            (petCell[capturedCell[0]][capturedCell[1]]) = "cat";
+            Picasso.get().load(catUrl).resize(247,229).into(pressed);
+        }
+
         roundCount++;
-        if (player1turn) {
-            ((Button) v).setText("X");
-            setRedColor(v);
-            player1turn = false;
-
-            return;
-        } else {
-            ((Button) v).setText("O");
-            setBlueColor(v);
-            player1turn = true;
-            return;
-        }
-
-
     }
 
     private boolean checkForWin() {
@@ -80,7 +124,7 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
-                field[i][j]  = buttons[i][j].getText().toString();
+
             }
         }
 
@@ -92,57 +136,153 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
         return true;
     }
 
-    private void unpackColors() {
-        redColor = colorsArray[0];
-        blueColor = colorsArray[1];
+    /**
+     * Gets the URLs from the intent ans stores it in the dogUrl and catUrl that will be used
+     * for loading the image on the clicked buttons.
+     */
+    private void unpackUrls() {
+        dogUrl = urls[0];
+        catUrl = urls[1];
     }
 
-    private void setRedColor(View v) {
-        switch (redColor) {
-            case 1:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red1));
-                break;
+    /**
+     * Returns the position in the array that has been clicked.
+     * @param id button that has been clicked.
+     * @return the position in the array that has been clicked.
+     */
+    private int[] getButtonID(int id) {
+        int[] toReturn = new int[2];
 
-            case 2:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red2));
-                break;
+        switch (id) {
+            case R.id.button_00:
+                toReturn[0] = 0;
+                toReturn[1] = 0;
+                return toReturn;
 
-            case 3:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red3));
-                break;
+            case R.id.button_01:
+                toReturn[0] = 0;
+                toReturn[1] = 1;
+                return toReturn;
 
-            case 4:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red4));
-                break;
+            case R.id.button_02:
+                toReturn[0] = 0;
+                toReturn[1] = 2;
+                return toReturn;
 
-            case 5:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.red5));
-                break;
+            case R.id.button_03:
+                toReturn[0] = 0;
+                toReturn[1] = 3;
+                return toReturn;
+
+            case R.id.button_10:
+                toReturn[0] = 1;
+                toReturn[1] = 0;
+                return toReturn;
+
+            case R.id.button_11:
+                toReturn[0] = 1;
+                toReturn[1] = 1;
+                return toReturn;
+
+            case R.id.button_12:
+                toReturn[0] = 1;
+                toReturn[1] = 2;
+                return toReturn;
+
+            case R.id.button_13:
+                toReturn[0] = 1;
+                toReturn[1] = 3;
+                return toReturn;
+
+            case R.id.button_20:
+                toReturn[0] = 2;
+                toReturn[1] = 0;
+                return toReturn;
+
+            case R.id.button_21:
+                toReturn[0] = 2;
+                toReturn[1] = 1;
+                return toReturn;
+
+            case R.id.button_22:
+                toReturn[0] = 2;
+                toReturn[1] = 2;
+                return toReturn;
+
+            case R.id.button_23:
+                toReturn[0] = 2;
+                toReturn[1] = 3;
+                return toReturn;
+
+            case R.id.button_30:
+                toReturn[0] = 3;
+                toReturn[1] = 0;
+                return toReturn;
+
+            case R.id.button_31:
+                toReturn[0] = 3;
+                toReturn[1] = 1;
+                return toReturn;
+
+            case R.id.button_32:
+                toReturn[0] = 3;
+                toReturn[1] = 2;
+                return toReturn;
+
+            case R.id.button_33:
+                toReturn[0] = 3;
+                toReturn[1] = 3;
+                return toReturn;
+
+            case R.id.button_40:
+                toReturn[0] = 4;
+                toReturn[1] = 0;
+                return toReturn;
+
+            case R.id.button_41:
+                toReturn[0] = 4;
+                toReturn[1] = 1;
+                return toReturn;
+
+            case R.id.button_42:
+                toReturn[0] = 4;
+                toReturn[1] = 2;
+                return toReturn;
+
+            case R.id.button_43:
+                toReturn[0] = 4;
+                toReturn[1] = 3;
+                return toReturn;
+
+            case R.id.button_50:
+                toReturn[0] = 5;
+                toReturn[1] = 0;
+                return toReturn;
+
+            case R.id.button_51:
+                toReturn[0] = 5;
+                toReturn[1] = 1;
+                return toReturn;
+
+            case R.id.button_52:
+                toReturn[0] = 5;
+                toReturn[1] = 2;
+                return toReturn;
+
+            case R.id.button_53:
+                toReturn[0] = 5;
+                toReturn[1] = 3;
+                return toReturn;
         }
+        return null;
     }
 
-    private void setBlueColor(View v) {
-        switch (blueColor) {
-            case 1:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue1));
-                break;
+    /**
+     * @param taken position of the array that wants to be captured.
+     * @return false if can't be captured, true if can be.
+     */
+    private boolean valid(int[] taken) {
+        return (petCell[taken[0]][taken[1]]).equals("");
 
-            case 2:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue2));
-                break;
-
-            case 3:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue3));
-                break;
-
-            case 4:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue4));
-                break;
-
-            case 5:
-                ((Button) v).setBackgroundTintList(getResources().getColorStateList(R.color.blue5));
-                break;
-
-        }
     }
 }
