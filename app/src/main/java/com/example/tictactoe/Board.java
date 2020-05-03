@@ -284,5 +284,7 @@ public class Board extends AppCompatActivity implements View.OnClickListener {
     private boolean valid(int[] taken) {
         return (petCell[taken[0]][taken[1]]).equals("");
 
+
+
     }
 }
